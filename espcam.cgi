@@ -1,3 +1,12 @@
+#!/usr/bin/python
+import os, sys,glob
+from globals import  IMAGE_DIR,directories
+
+
+
+print ("""Content-type: text/html
+
+
 <head>
 <title>ESPCam</title>
 
@@ -39,6 +48,13 @@ function doperp() {
 		clearTimeout(globalTimer);
 	}
 }
+function keyDownTextField(e) {
+var keyCode = e.keyCode;
+	if(keyCode==32) {
+		dosnap();
+	} 
+	
+}
 function doload() {
 	var b = document.getElementById("initbutton");
 	var x = b.innerText;
@@ -53,6 +69,8 @@ function doload() {
 		alert(j['message']);
 	}
 	b.innerText="Initialize";
+document.addEventListener("keydown", keyDownTextField, false);
+
 }
 function dosnap() {
 	var x =document.getElementById("cam");
@@ -146,11 +164,22 @@ function dosnap() {
 <div><input type="checkbox" onchange="doperp()" id="perp" />Perpetual</div>
 <div><input type="checkbox" id="save_cb" />Save</div>
 <div><select id="savetype">
-<option>none</option>
-<option>brad</option>
+""")
+for x in directories:
+	print (f"<option>{x}</option>")
+print ("""
 </select></div>
 <div id="debug">
 </div>
+<p>
+<b>Snap Keys:</b><br />
+""")
+for (i,x) in enumerate(directories):
+	print (f"{i+1}: {x}<br />")
+
+print("""
+Space: (Preview)<br />
+</p>
 </body>
 
 <!--
@@ -165,3 +194,4 @@ http://10.0.0.63/control?var=led_intensity&val=224
 2x CLock
 http://10.0.0.63/reg?reg=273&mask=128&val=128
 -->
+""")

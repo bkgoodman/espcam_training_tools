@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os,sys,glob,cgi,html,pathlib
+from globals import  directories,IMAGE_DIR 
 
 
 def checkpath(x,directories):
@@ -7,7 +8,7 @@ def checkpath(x,directories):
 	p = p.split("/")
 	if len(p) != 3:
 		raise(BaseException())
-	if p[0] != 'saved_images':
+	if p[0] != IMAGE_DIR:
 		raise(BaseException())
 	if p[1] not in directories:
 		raise(BaseException())
@@ -15,8 +16,6 @@ def checkpath(x,directories):
 		raise(BaseException())
 	return
 	
-directories = glob.glob("saved_images/*")
-directories = [x.replace("saved_images/","") for x in directories if os.path.isdir(x)]
 
 form = cgi.FieldStorage()
 debug=""
@@ -67,14 +66,14 @@ for x in form:
 		os.remove(x)
 	if form[x].value =="Move":
 		checkpath(x,directories)
-		dest=os.path.join("saved_images",moveto,os.path.split(x)[1])
+		dest=os.path.join(IMAGE_DIR,moveto,os.path.split(x)[1])
 		try:
 			os.rename(x,dest)
 		except BaseException as e:
 			print (e)
 		debug += "Moving {} to {}\n".format(x,dest)
 # Files have been handled - now render 
-files = glob.glob("saved_images/"+sourcedir+"/*.jpg")
+files = glob.glob(IMAGE_DIR+"/"+sourcedir+"/*.jpg")
 for (i,x) in enumerate(files[0:PAGESIZE]):
 	short = os.path.split(x)[1]
 	short = short[4:8]+".."+short[-8:]

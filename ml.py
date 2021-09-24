@@ -30,14 +30,15 @@ tf.keras.Input(shape=input_shape),
 tf.keras.layers.experimental.preprocessing.Rescaling(1./255),
 #tf.keras.layers.MaxPooling2D((2,2), strides=3, padding="same"),
 #tf.keras.layers.Conv2D(32, (2,2), padding="same"),
-tf.keras.layers.Conv2D(32, (2,2), strides=3, padding="same"),
-tf.keras.layers.MaxPooling2D((2,2), padding="same"),
+tf.keras.layers.MaxPooling2D((4,4), padding="same"),
+tf.keras.layers.Conv2D(32, (2,2), strides=2, padding="same"),
+tf.keras.layers.Conv2D(32, (2,2), strides=2, padding="same"),
 #x = tf.keras.layers.BatchNormalization()(x)
 #x = tf.keras.layers.Activation("relu")(x)
 tf.keras.layers.Flatten(),
-tf.keras.layers.Dense(32, activation="relu"), #32
-tf.keras.layers.Dense(16, activation="relu"), #32
-tf.keras.layers.Dense(64, activation="relu"), #32
+tf.keras.layers.Dense(8, activation="relu"), #32
+#tf.keras.layers.Dense(16, activation="relu"), #32
+#tf.keras.layers.Dense(64, activation="relu"), #32
 tf.keras.layers.Dense(2, activation="softmax"),
 #x = tf.keras.layers.Dense(2, activation="softmax")(x)
 ])
@@ -49,7 +50,7 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram
 
 model.compile(
     #optimizer=tf.keras.optimizers.Adam(1e-6), #5
-    optimizer=tf.keras.optimizers.SGD(lr=0.01, decay=1e-5, momentum=0.6, nesterov=True),
+    optimizer=tf.keras.optimizers.SGD(lr=0.005, decay=1e-6, momentum=0.6, nesterov=True),
     #loss="binary_crossentropy",
     loss="sparse_categorical_crossentropy",
     metrics=["sparse_categorical_accuracy"],

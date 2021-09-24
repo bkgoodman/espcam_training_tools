@@ -1,0 +1,1 @@
+This project creates a web UI that lets you snap and view photos from a ESP-CAM on a Linux Apache CGI script, then place and manipulate them into folder for use in TensorFlow Keras training for Tensorflow Lite Micro model creation from user-collected data.
