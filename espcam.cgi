@@ -179,6 +179,7 @@ for (i,x) in enumerate(directories):
 
 print("""
 Space: (Preview)<br />
+<a href="view.cgi">View</a>
 </p>
 </body>
 

@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import os,sys,glob,cgi,html,pathlib
+import os,sys,glob,cgi,html,pathlib,re,uuid
 from globals import  directories,IMAGE_DIR 
 
 
@@ -22,9 +22,11 @@ debug=""
 sourcedir = "none"
 if "sourcedir" in form:
 	sourcedir=form['sourcedir'].value
+start=0
+if "start" in form:
+	start = int(form['start'].value)
 
-
-PAGESIZE=100
+PAGESIZE=12
 moveto=None
 if 'moveto' in form:
 	moveto = form['moveto'].value
@@ -72,9 +74,44 @@ for x in form:
 		except BaseException as e:
 			print (e)
 		debug += "Moving {} to {}\n".format(x,dest)
+if 'confirm' in form and form['confirm'].value == "Uncommit":
+	files = glob.glob(IMAGE_DIR+"/"+sourcedir+"/*.jpg")
+	committed = [x for x in files if os.path.split(x)[1].startswith("img-z")]
+	for x in committed:
+		u = uuid.uuid4().hex
+		dest = os.path.join(IMAGE_DIR,sourcedir,"img-{}.jpg".format(u))
+		debug += "REname {} to {}\n".format(x,dest)
+		os.rename(x,dest)
+if 'confirm' in form and form['confirm'].value == "Commit":
+	debug += f"\nConfirm all {sourcedir}\n"
+	files = glob.glob(IMAGE_DIR+"/"+sourcedir+"/*.jpg")
+	committed = [x for x in files if os.path.split(x)[1].startswith("img-z")]
+	uncommitted = [x for x in files if not os.path.split(x)[1].startswith("img-z")]
+	"""
+	for f in sorted(files):
+		debug += f"{f}\n"
+	for f in sorted(committed):
+		debug += f"COMMITTED: {f}\n"
+	for f in sorted(uncommitted):
+		debug += f"UNCOMMITTED: {f}\n"
+	"""
+	lastcommit=0
+	if (len(committed)>0):
+		zz=sorted(committed)[-1]
+		lastcommit=int(re.search("/img-z(\d+)\.jpg$",zz).group(1))
+		debug += f"Lastcommit {zz} num={lastcommit}\n"
+	lastcommit+=1
+	for f in sorted(uncommitted):
+		newname = os.path.join(IMAGE_DIR,sourcedir,"img-z{0:06d}.jpg".format(lastcommit))
+		lastcommit+=1
+		debug += f"RENAME {f} to {newname}\n"
+		os.rename(f,newname)
+	
+	debug += f"Commited already {len(committed)}\n"
+
 # Files have been handled - now render 
 files = glob.glob(IMAGE_DIR+"/"+sourcedir+"/*.jpg")
-for (i,x) in enumerate(files[0:PAGESIZE]):
+for (i,x) in enumerate(sorted(files)[start:start+PAGESIZE]):
 	short = os.path.split(x)[1]
 	short = short[4:8]+".."+short[-8:]
 	if ( i%5)==0:
@@ -111,8 +148,31 @@ print ("""
 </select>
 </div>
 </form>
+""")
+
+for x in directories:
+	print (f"<a href=\"?sourcedir={x}\">{x}</a>")
 
 
+print ("<br />")
+print (f"<a href=\"?start=0&sourcedir={sourcedir}\">First</a>")
+prev = start - PAGESIZE
+if prev<0: prev=0
+print (f"<a href=\"?start={prev}&sourcedir={sourcedir}\">Prev</a>")
+n = start+PAGESIZE
+if n > (len(files)-PAGESIZE):
+	n = len(files)-PAGESIZE
+if n < 0: n=0
+print (f"<a href=\"?start={n}&sourcedir={sourcedir}\">Next</a>")
+start = len(files) - PAGESIZE
+if start<0: start=0
+print (f"<a href=\"?start={start}&sourcedir={sourcedir}\">Last</a>")
+print ("<br />")
+print (f"<a href=\"?confirm=Commit&sourcedir={sourcedir}\">Commit All</a>")
+print (f"<a href=\"?confirm=Uncommit&sourcedir={sourcedir}\">Uncommit All</a>")
+print (f"<a href=\"espcam.cgi\">Snap</a>")
+print ("<br />")
+print ("""
 <div id="debug">
 <h3>Debug</h3>
 <pre>
