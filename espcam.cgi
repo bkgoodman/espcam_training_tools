@@ -18,6 +18,13 @@ background-color:blue;
 </style>
 <script type="text/javascript">
 var globalTimer;
+var dirnames=["",
+""")
+for (i,x) in enumerate(directories):
+	print ("\"{}\",\n".format(x))
+
+print ("""
+];
 function move_history(src,dest) {
 	var s = document.getElementById("history_"+src);
 	var d = document.getElementById("history_"+dest);
@@ -42,7 +49,7 @@ function deletebutton(xx) {
 function doperp() {
 	x = document.getElementById("perp").checked
 	if (x) {
-		dosnap();
+		dosnap(undefined);
 		globalTimer=setTimeout(doload,250);
 	} else {
 		clearTimeout(globalTimer);
@@ -50,10 +57,14 @@ function doperp() {
 }
 function keyDownTextField(e) {
 var keyCode = e.keyCode;
-	if(keyCode==32) {
-		dosnap();
-	} 
+var key = e.key;
+var i = key - '0';
+		if ((i>=0) && (i<dirnames.length))
+			dosnap(dirnames[i]);
+		else if (keyCode == 32)
+			dosnap(undefined);
 	
+return (true);
 }
 function doload() {
 	var b = document.getElementById("initbutton");
@@ -72,13 +83,15 @@ function doload() {
 document.addEventListener("keydown", keyDownTextField, false);
 
 }
-function dosnap() {
+function dosnap(saveto) {
 	var x =document.getElementById("cam");
 	var save =document.getElementById("save_cb").checked;
 	var name =document.getElementById("savetype").value;
   var xhttp = new XMLHttpRequest();
 	var url = "cam.cgi"
-	if (save) {
+	if (saveto !== undefined)
+		url += "?save="+saveto;
+	else if (save) {
 		url += "?save="+name;
 	}
   xhttp.open("GET", url, false);
@@ -121,7 +134,7 @@ function dosnap() {
 </script>
 </head>
 <body onload=doload()>
-<button onclick="dosnap();" class="activebutton" name="Snap">Snap</button>
+<button onclick="dosnap(undefined);" class="activebutton" name="Snap">Snap</button>
 <button id="initbutton" class="activebutton" onclick="doload();" style=":active {background: yellow}" name="Initialize">Initialize</button>
 
 <div id="history_0">
