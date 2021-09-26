@@ -7,7 +7,6 @@ image_size=(180,180)
 batch_size=1
 input_shape = image_size+(3,)
 
-"""
 train_ds = tf.keras.preprocessing.image.ImageDataGenerator(
         #rescale=1./255,
         shear_range=0.2,
@@ -52,6 +51,7 @@ val_ds = tf.keras.preprocessing.image_dataset_from_directory(
     batch_size=batch_size,
 )
 print (train_ds.class_names)
+"""
 model = tf.keras.Sequential([
 tf.keras.Input(shape=input_shape),
 tf.keras.layers.experimental.preprocessing.Rescaling(1./255),
@@ -75,8 +75,8 @@ log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 model.compile(
-    optimizer=tf.keras.optimizers.Adam(1e-4), #5
-    #optimizer=tf.keras.optimizers.SGD(lr=0.005, decay=1e-6, momentum=0.6, nesterov=True),
+    #optimizer=tf.keras.optimizers.Adam(1e-4), #5
+    optimizer=tf.keras.optimizers.SGD(lr=0.005, decay=1e-6, momentum=0.6, nesterov=True),
     #loss="binary_crossentropy",
     loss="sparse_categorical_crossentropy",
     metrics=["sparse_categorical_accuracy"],
