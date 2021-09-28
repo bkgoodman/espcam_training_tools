@@ -25,10 +25,25 @@ for (i,x) in enumerate(directories):
 
 print ("""
 ];
+function movesnapbutton(o,moveto){
+	var s = document.getElementById("history_0");
+	var path= s.getAttribute("bkg-data-path");
+	var filename= s.getAttribute("bkg-data-filename");
+	console.log("Move",j['path'],"to",moveto,"/",filename);
+  var xhttp = new XMLHttpRequest();
+  xhttp.open("GET", "op.cgi?op=move&path="+path+"&moveto="+moveto, false);
+  xhttp.send();
+	console.log(xhttp.responseText);
+	j = JSON.parse(xhttp.responseText);
+	s.setAttribute("bkg-data-path",j['MoveTo']);
+
+}
 function move_history(src,dest) {
 	var s = document.getElementById("history_"+src);
 	var d = document.getElementById("history_"+dest);
 	console.log(s);
+	d.setAttribute("bkg-data-path",s.getAttribute("bkg-data-data"));
+	d.setAttribute("bkg-data-filename",s.getAttribute("bkg-data-filename"));
 	var s_img = s.children[0];
 	var d_img = d.children[0];
 	d_img.src = s_img.src;
@@ -39,25 +54,51 @@ function move_history(src,dest) {
 
 	var sbtn = s.children[2];
 	var dbtn = d.children[2];
-	
+	dbtn.setAttribute("filename",sbtn.getAttribute("filename"));
+	var sbtn = s.children[3];
+	var dbtn = d.children[3];
+	dbtn.setAttribute("filename",sbtn.getAttribute("filename"));
+	var sbtn = s.children[4];
+	var dbtn = d.children[4];
 	dbtn.setAttribute("filename",sbtn.getAttribute("filename"));
 }
 
+function movebutton(xx) {
+	var moveto =document.getElementById("savetype").value;
+	console.log("Movebutton",xx);
+  var xhttp = new XMLHttpRequest();
+  xhttp.open("GET", "op.cgi?op=move&path="+xx.parentElement.getAttribute("bkg-data-path")+"&moveto="+moveto, false);
+  xhttp.send();
+	console.log(xhttp.responseText);
+}
 function deletebutton(xx) {
 	console.log("Deletebutton",xx);
+  var xhttp = new XMLHttpRequest();
+  xhttp.open("GET", "op.cgi?op=delete&path="+xx.parentElement.getAttribute("bkg-data-path"), false);
+  xhttp.send();
+	console.log(xhttp.responseText);
 }
 function inferbutton(xx) {
-	console.log("InferButton",xx);
   var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				 // Typical action to be performed when the document is ready:
 				 //document.getElementById("demo").innerHTML = xhttp.responseText;
-				alert(xhttp.responseText);
+				document.getElementById('inference_results').innerHTML=xhttp.responseText;
 			}
 	};
-  xhttp.open("GET", "infer.py?filename="+xx, false);
+	if (xx == undefined)
+		{ xx=document.getElementById("history_0"); }
+	else
+		{ xx=parentElement; }
+  xhttp.open("GET", "infer.cgi?path="+xx.getAttribute("bkg-data-path"), false);
   xhttp.send();
+}
+
+function snap_and_infer(x) {
+	dosnap(undefined);
+	inferbutton(undefined);
+
 }
 function doperp() {
 	x = document.getElementById("perp").checked
@@ -127,15 +168,19 @@ function dosnap(saveto) {
 	move_history(1,2);
 	move_history(0,1);
   document.getElementById("history_0").children[0].src = "data:image/jpeg;base64,"+j['img'];
+  document.getElementById("history_0").setAttribute("bkg-data-path",j['path']);
+  document.getElementById("history_0").setAttribute("bkg-data-filename",j['filename']);
 	if ('filename' in j) {
-		document.getElementById("history_0").children[1].innerHTML = j['filename'];
-		document.getElementById("history_0").children[2].setAttribute("filename",j['filename']);
-		document.getElementById("history_0").children[3].setAttribute("filename",j['filename']);
+		document.getElementById("history_0").children[1].innerHTML = j['short'];
+		document.getElementById("history_0").children[2].setAttribute("filename",j['path']);
+		document.getElementById("history_0").children[3].setAttribute("filename",j['path']);
+		document.getElementById("history_0").children[4].setAttribute("filename",j['path']);
 	}
 	else {
 		document.getElementById("history_0").children[1].innerHTML = "";
 		document.getElementById("history_0").children[2].setAttribute("filename","");
 		document.getElementById("history_0").children[3].setAttribute("filename","");
+		document.getElementById("history_0").children[4].setAttribute("filename","");
 	}
 	
 	delete j['img'];
@@ -151,12 +196,24 @@ function dosnap(saveto) {
 <body onload=doload()>
 <button onclick="dosnap(undefined);" class="activebutton" name="Snap">Snap</button>
 <button id="initbutton" class="activebutton" onclick="doload();" style=":active {background: yellow}" name="Initialize">Initialize</button>
+<button id="snapinfer" class="activebutton" onclick="snap_and_infer(this);" style=":active {background: yellow}" name="snapinfer">Snap&Inf.</button>
 
 <div id="history_0">
 	<img />
 	<p>--</p>
 	<button filename="" onclick="deletebutton(this);">Delete</button>
 	<button filename="" onclick="inferbutton(this);">Infer</button>
+	<button filename="" onclick="movebutton(this);">Move</button>
+</div>
+<div>
+""")
+for x in directories:
+	print (f"<button onclick=\"movesnapbutton(this,'{x}');\">{x}</button>")
+print ("""
+</div>
+
+<div>
+<p id="inference_results" />
 </div>
 
 <div>
@@ -166,30 +223,35 @@ function dosnap(saveto) {
 			<p>--</p>
 			<button filename="" onclick="deletebutton(this);">Delete</button>
 			<button filename="" onclick="inferbutton(this);">Infer</button>
+			<button filename="" onclick="movebutton(this);">Move</button>
 		</div>
 		<div id="history_2">
 			<img />
 			<p>--</p>
 			<button filename="" onclick="deletebutton(this);">Delete</button>
 			<button filename="" onclick="inferbutton(this);">Infer</button>
+			<button filename="" onclick="movebutton(this);">Move</button>
 		</div>
 		<div id="history_3">
 			<img />
 			<p>--</p>
 			<button filename="" onclick="inferbutton(this);">Infer</button>
 			<button filename="" onclick="deletebutton(this);">Delete</button>
+			<button filename="" onclick="movebutton(this);">Move</button>
 		</div>
 		<div id="history_4">
 			<img />
 			<p>--</p>
 			<button filename="" onclick="deletebutton(this);">Delete</button>
 			<button filename="" onclick="inferbutton(this);">Infer</button>
+			<button filename="" onclick="movebutton(this);">Move</button>
 		</div>
 		<div id="history_5">
 			<img />
 			<p>--</p>
 			<button filename="" onclick="deletebutton(this);">Delete</button>
 			<button filename="" onclick="inferbutton(this);">Infer</button>
+			<button filename="" onclick="movebutton(this);">Move</button>
 		</div>
 	</div>
 </div>

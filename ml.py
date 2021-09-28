@@ -6,7 +6,7 @@ import json
 
 image_size=(180,180)
 batch_size=1
-input_shape = image_size+(3,)
+input_shape = image_size+(1,)
 
 train_ds = tf.keras.preprocessing.image.ImageDataGenerator(
         #rescale=1./255,
@@ -25,11 +25,13 @@ train_ds = train_ds.flow_from_directory(
         target_size=image_size,
         subset='training',
         batch_size=batch_size,
+				color_mode='grayscale',
         class_mode='sparse')
 val_ds = val_ds.flow_from_directory(
         'saved_images',
         target_size=image_size,
         batch_size=batch_size,
+				color_mode='grayscale',
         subset='validation',
         class_mode='sparse')
 
@@ -61,14 +63,19 @@ tf.keras.Input(shape=input_shape),
 tf.keras.layers.experimental.preprocessing.Rescaling(1./255),
 #tf.keras.layers.MaxPooling2D((2,2), strides=3, padding="same"),
 #tf.keras.layers.Conv2D(32, (2,2), padding="same"),
-tf.keras.layers.MaxPooling2D((4,4), padding="same"),
+#tf.keras.layers.MaxPooling2D((2,2), padding="same"),
 tf.keras.layers.Conv2D(64, (2,2), strides=2, padding="same"),
+tf.keras.layers.MaxPooling2D((2,2), padding="same"),
+tf.keras.layers.Conv2D(64, (2,2), strides=2, padding="same"),
+tf.keras.layers.MaxPooling2D((2,2), padding="same"),
+tf.keras.layers.Conv2D(32, (2,2), strides=2, padding="same"),
+tf.keras.layers.MaxPooling2D((2,2), padding="same"),
 tf.keras.layers.Conv2D(32, (2,2), strides=2, padding="same"),
 #x = tf.keras.layers.BatchNormalization()(x)
 #x = tf.keras.layers.Activation("relu")(x)
 tf.keras.layers.Flatten(),
 tf.keras.layers.Dense(32, activation="relu"), #32
-#tf.keras.layers.Dense(32, activation="relu"), #32
+tf.keras.layers.Dense(32, activation="relu"), #32
 tf.keras.layers.Dense(6, activation="softmax"),
 #x = tf.keras.layers.Dense(2, activation="softmax")(x)
 ])
@@ -80,13 +87,14 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram
 
 model.compile(
     #optimizer=tf.keras.optimizers.Adam(1e-4), #5
-    optimizer=tf.keras.optimizers.SGD(lr=0.005, decay=1e-6, momentum=0.6, nesterov=True),
+    optimizer=tf.keras.optimizers.SGD(lr=0.003, decay=1e-6, momentum=0.6, nesterov=True),
+    #optimizer=tf.keras.optimizers.rmsprop(lr=0.005, decay=1e-6, momentum=0.6, nesterov=True),
     #loss="binary_crossentropy",
     loss="sparse_categorical_crossentropy",
     metrics=["sparse_categorical_accuracy"],
 )
 model.summary()
-model.fit(train_ds, epochs=250, validation_data=val_ds, callbacks=[tensorboard_callback])
+model.fit(train_ds, epochs=130, validation_data=val_ds, callbacks=[tensorboard_callback])
 model.save("bkgmodel")
 print (train_ds.class_indices)
 

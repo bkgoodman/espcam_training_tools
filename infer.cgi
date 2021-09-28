@@ -16,7 +16,7 @@ except BaseException as msg:
 
 form=cgi.FieldStorage()
 
-sock.sendall(form['filename'].value.encode('utf-8'))
+sock.sendall(form['path'].value.encode('utf-8'))
 result = sock.recv(256)
 print ("""Content-type: application/json
 

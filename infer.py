@@ -12,7 +12,7 @@ socket_name = "./infer_socket"
 
 def infer(filename):
 	img = tf.keras.preprocessing.image.load_img(
-			filename, target_size=image_size
+			filename, target_size=image_size, grayscale=True
 	)
 	#print (img)
 	#print (dir(img))
@@ -31,7 +31,7 @@ def infer(filename):
 	j = {}
 	#print (predictions[0][1])
 	for (i,x) in enumerate(predictions[0]):
-		j[classes[i]] = float(x)
+		j[classes[i]] = round(float(x)*100,2)
 	return json.dumps(j)
 
 if len(sys.argv) > 1:
