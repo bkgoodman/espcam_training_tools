@@ -46,6 +46,19 @@ function move_history(src,dest) {
 function deletebutton(xx) {
 	console.log("Deletebutton",xx);
 }
+function inferbutton(xx) {
+	console.log("InferButton",xx);
+  var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				 // Typical action to be performed when the document is ready:
+				 //document.getElementById("demo").innerHTML = xhttp.responseText;
+				alert(xhttp.responseText);
+			}
+	};
+  xhttp.open("GET", "infer.py?filename="+xx, false);
+  xhttp.send();
+}
 function doperp() {
 	x = document.getElementById("perp").checked
 	if (x) {
@@ -117,10 +130,12 @@ function dosnap(saveto) {
 	if ('filename' in j) {
 		document.getElementById("history_0").children[1].innerHTML = j['filename'];
 		document.getElementById("history_0").children[2].setAttribute("filename",j['filename']);
+		document.getElementById("history_0").children[3].setAttribute("filename",j['filename']);
 	}
 	else {
 		document.getElementById("history_0").children[1].innerHTML = "";
 		document.getElementById("history_0").children[2].setAttribute("filename","");
+		document.getElementById("history_0").children[3].setAttribute("filename","");
 	}
 	
 	delete j['img'];
@@ -141,6 +156,7 @@ function dosnap(saveto) {
 	<img />
 	<p>--</p>
 	<button filename="" onclick="deletebutton(this);">Delete</button>
+	<button filename="" onclick="inferbutton(this);">Infer</button>
 </div>
 
 <div>
@@ -149,26 +165,31 @@ function dosnap(saveto) {
 			<img  />
 			<p>--</p>
 			<button filename="" onclick="deletebutton(this);">Delete</button>
+			<button filename="" onclick="inferbutton(this);">Infer</button>
 		</div>
 		<div id="history_2">
 			<img />
 			<p>--</p>
 			<button filename="" onclick="deletebutton(this);">Delete</button>
+			<button filename="" onclick="inferbutton(this);">Infer</button>
 		</div>
 		<div id="history_3">
 			<img />
 			<p>--</p>
+			<button filename="" onclick="inferbutton(this);">Infer</button>
 			<button filename="" onclick="deletebutton(this);">Delete</button>
 		</div>
 		<div id="history_4">
 			<img />
 			<p>--</p>
 			<button filename="" onclick="deletebutton(this);">Delete</button>
+			<button filename="" onclick="inferbutton(this);">Infer</button>
 		</div>
 		<div id="history_5">
 			<img />
 			<p>--</p>
 			<button filename="" onclick="deletebutton(this);">Delete</button>
+			<button filename="" onclick="inferbutton(this);">Infer</button>
 		</div>
 	</div>
 </div>

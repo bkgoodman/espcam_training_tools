@@ -122,6 +122,7 @@ for (i,x) in enumerate(sorted(files)[start:start+PAGESIZE]):
 			<p>{short}</p>
 			<input type="submit" Value="Delete" name="{file}" />
 			<input type="submit" Value="Move" name="{file}" />
+			<a href="infer.cgi?filename={file}">Infer</a>
 		</div>
 	""".format(file=x,short=short))
 	if ( i%5)==4:

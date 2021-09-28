@@ -2,6 +2,7 @@
 
 import tensorflow as tf
 import datetime
+import json
 
 image_size=(180,180)
 batch_size=1
@@ -31,6 +32,9 @@ val_ds = val_ds.flow_from_directory(
         batch_size=batch_size,
         subset='validation',
         class_mode='sparse')
+
+j = sorted(train_ds.class_indices,key=lambda y: y)
+json.dump (j,open('classes.json','w'))
 """
 train_ds = tf.keras.preprocessing.image_dataset_from_directory(
     "saved_images",
@@ -82,6 +86,7 @@ model.compile(
     metrics=["sparse_categorical_accuracy"],
 )
 model.summary()
-model.fit(train_ds, epochs=15, validation_data=val_ds, callbacks=[tensorboard_callback])
+model.fit(train_ds, epochs=250, validation_data=val_ds, callbacks=[tensorboard_callback])
 model.save("bkgmodel")
+print (train_ds.class_indices)
 
