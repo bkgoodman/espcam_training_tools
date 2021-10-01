@@ -45,9 +45,9 @@ image_size=(180,180)
 batch_size=2
 input_shape = image_size+(3,)
 
-model = tf.keras.models.load_model("bkgmodel")
+model = tf.keras.models.load_model("bkgmodel.h5")
 #model.summary()
-classes=json.load(open("classes.json"))
+classes=json.load(open("bkgmodel_classes.json"))
 
 if filename is None:
 	print("Sercing")

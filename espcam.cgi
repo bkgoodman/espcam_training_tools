@@ -80,11 +80,24 @@ function deletebutton(xx) {
 }
 function inferbutton(xx) {
   var xhttp = new XMLHttpRequest();
+	document.getElementById('inference_results').innerHTML="";
 	xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				 // Typical action to be performed when the document is ready:
 				 //document.getElementById("demo").innerHTML = xhttp.responseText;
 				document.getElementById('inference_results').innerHTML=xhttp.responseText;
+				j = JSON.parse(xhttp.responseText);
+				for (var x in j) {
+					var z = document.getElementById("svgrect_"+x);
+					var p = j[x]*1;
+					console.log("GOT INFER PARMA",x,p);
+					z.setAttribute("width",p);
+					var z = document.getElementById("svgtspan2_"+x);
+					console.log(z);
+					z.innerHTML=p+"%";
+				}
+			} else if (this.readyState == 4) {
+				document.getElementById('inference_results').innerHTML="Error communicating w/ Inference engine";
 			}
 	};
 	if (xx == undefined)
@@ -212,6 +225,54 @@ for x in directories:
 print ("""
 </div>
 
+<div>
+
+<svg
+   width="200mm"
+   height="{h}mm"
+   viewBox="0 0 400 {vbh}"
+   version="1.1"
+   id="svg5"
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+""".format(h=10*len(directories),vbh=(10*len(directories))))
+for (i,x) in enumerate(directories):
+	print ("""
+    <rect
+       style="opacity:0.613821;fill:#00FF00;fill-rule:evenodd;stroke-width:2.96492;stroke-linecap:round;stroke-linejoin:round"
+       id="svgrect_{x}"
+       width="100"
+       height="11.640142"
+       x="67.160336"
+       y="{recty}" />
+    <text
+       xml:space="preserve" style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;text-align:end;text-anchor:end;white-space:pre;inline-size:69.2968;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="60.020069" y="73.368156"
+       id="svgtext_{x}"
+       transform="translate(-4.814726,-60.846135)"><tspan
+         x="80.020069"
+         y="{texty}"
+         id="svgtspan_{x}">{x}</tspan>
+		</text>
+    <text
+       xml:space="preserve" style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;text-align:end;text-anchor:start;white-space:pre;inline-size:69.2968;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="60.020069" y="73.368156"
+       id="svgtext_{x}"
+       transform="translate(-4.814726,-60.846135)"><tspan
+         x="180.020069"
+         y="{texty}"
+         id="svgtspan2_{x}">100%</tspan>
+		</text>
+""".format(i=i,x=x,texty=69.368156+(i*15),recty=0+(i*15)))
+
+print ("""
+  </g>
+</svg>
+
+</object>
+</div>
 <div>
 <p id="inference_results" />
 </div>
