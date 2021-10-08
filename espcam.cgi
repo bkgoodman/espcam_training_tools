@@ -88,8 +88,14 @@ function inferbutton(xx) {
 				document.getElementById('inference_results').innerHTML=xhttp.responseText;
 				j = JSON.parse(xhttp.responseText);
 				for (var x in j) {
-					var z = document.getElementById("svgrect_"+x);
 					var p = j[x]*1;
+					var z = document.getElementById("svgrect_"+x);
+					if  (p>70)
+						z.style.fill="#00FF00";
+					else if (p>30)
+						z.style.fill="#FFFF00";
+					else
+						z.style.fill="#FF0000";
 					console.log("GOT INFER PARMA",x,p);
 					z.setAttribute("width",p);
 					var z = document.getElementById("svgtspan2_"+x);
@@ -103,7 +109,7 @@ function inferbutton(xx) {
 	if (xx == undefined)
 		{ xx=document.getElementById("history_0"); }
 	else
-		{ xx=parentElement; }
+		{ xx=xx.parentElement; }
   xhttp.open("GET", "infer.cgi?path="+xx.getAttribute("bkg-data-path"), false);
   xhttp.send();
 }
@@ -155,11 +161,17 @@ function dosnap(saveto) {
 	var save =document.getElementById("save_cb").checked;
 	var name =document.getElementById("savetype").value;
   var xhttp = new XMLHttpRequest();
-	var url = "cam.cgi"
-	if (saveto !== undefined)
-		url += "?save="+saveto;
-	else if (save) {
-		url += "?save="+name;
+	var url;
+
+	if (saveto == "**GETUNCLASS**") {
+		url = "unclassified.cgi";
+	} else {
+		url = "cam.cgi"
+		if (saveto !== undefined)
+			url += "?save="+saveto;
+		else if (save) {
+			url += "?save="+name;
+		}
 	}
   xhttp.open("GET", url, false);
   xhttp.send();
@@ -207,10 +219,21 @@ function dosnap(saveto) {
 </script>
 </head>
 <body onload=doload()>
+<div>
 <button onclick="dosnap(undefined);" class="activebutton" name="Snap">Snap</button>
 <button id="initbutton" class="activebutton" onclick="doload();" style=":active {background: yellow}" name="Initialize">Initialize</button>
 <button id="snapinfer" class="activebutton" onclick="snap_and_infer(this);" style=":active {background: yellow}" name="snapinfer">Snap&Inf.</button>
+<button id="getuncless" class="activebutton" onclick="dosnap('**GETUNCLASS**');" style=":active {background: yellow}" name="snapinfer">Unclass'd</button>
+</div>
 
+""")
+
+# BEING TOPLINE DIV
+
+print ("<div style='display:inline-grid;grid-column:1/6;grid-column-gap:10px;grid-template-columns:auto auto auto auto auto auto'>")
+# PRINT A DIV
+
+print ("""
 <div id="history_0">
 	<img />
 	<p>--</p>
@@ -218,15 +241,12 @@ function dosnap(saveto) {
 	<button filename="" onclick="inferbutton(this);">Infer</button>
 	<button filename="" onclick="movebutton(this);">Move</button>
 </div>
-<div>
 """)
-for x in directories:
-	print (f"<button onclick=\"movesnapbutton(this,'{x}');\">{x}</button>")
+
+## PRINT A DIV
+
 print ("""
-</div>
-
 <div>
-
 <svg
    width="200mm"
    height="{h}mm"
@@ -273,6 +293,26 @@ print ("""
 
 </object>
 </div>
+""")
+## PRINT A DIV
+
+# PRINT END TOPLINE DIV
+print ("</div>")
+
+print ("""
+<div>
+""")
+for x in directories:
+	print (f"<button onclick=\"movesnapbutton(this,'{x}');\">{x}</button>")
+print ("""
+</div>
+""")
+
+
+
+# PRINT A DIV 
+
+print ("""
 <div>
 <p id="inference_results" />
 </div>
