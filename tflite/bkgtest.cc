@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "main_functions.h"
 
 #include <limits>
 #include "tensorflow/lite/c/common.h"
@@ -156,7 +155,7 @@ void infer(char *filename) {
   TF_LITE_MICRO_EXPECT_EQ(kCategoryCount, output->dims->data[1]);
   TF_LITE_MICRO_EXPECT_EQ(kTfLiteInt8, input->type);
   TF_LITE_MICRO_EXPECT_EQ(kTfLiteInt8, output->type);
-  TF_LITE_MICRO_EXPECT_EQ(kTfLiteFloat32, output->type);
+  //TF_LITE_MICRO_EXPECT_EQ(kTfLiteFloat32, output->type);
 
   // Process the inference results.
 	// ["five", "horns", "peace", "sideeye", "three", "thumbs_up"]
@@ -165,7 +164,8 @@ void infer(char *filename) {
 	//printf("Person Score %d no_person_score %d\n",person_score,no_person_score);
 	printf("Category count is %d\n",kCategoryCount);
 	for (i=0;i<kCategoryCount;i++) {
-			printf("%s %0.4f",kCategoryLabels[i], double(tflite::GetTensorData<float>(output)[i]));
+			printf("%s",kCategoryLabels[i]);
+			//printf("%s %0.4f",kCategoryLabels[i], double(tflite::GetTensorData<float>(output)[i]));
 			/* printf(" %4.4f ",double(tflite::GetTensorData<double>(output)[i])); */
 			printf(" %4d\n",tflite::GetTensorData<uint8_t>(output)[i]);
 	}
