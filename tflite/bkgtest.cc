@@ -167,7 +167,7 @@ void infer(char *filename) {
 			printf("%s",kCategoryLabels[i]);
 			//printf("%s %0.4f",kCategoryLabels[i], double(tflite::GetTensorData<float>(output)[i]));
 			/* printf(" %4.4f ",double(tflite::GetTensorData<double>(output)[i])); */
-			printf(" %4d\n",tflite::GetTensorData<uint8_t>(output)[i]);
+			printf(" %4d\n",tflite::GetTensorData<int8_t>(output)[i]);
 	}
 /*
 	printf("Five %d\n",int8_t(output->data.uint8[0]));
