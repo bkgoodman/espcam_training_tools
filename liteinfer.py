@@ -22,13 +22,15 @@ def infer(filename,classes):
 	#print (dir(img_array))
 	print ("ORIG",img_array.shape)
 	#img_array = tf.expand_dims(img_array /1.0, 0)  # Create batch axis
-	img_array= np.array(np.expand_dims(img_array/1.0,0), dtype=np.uint8)
+	img_array= np.array(np.expand_dims(img_array,0), dtype=np.uint8)
 	print ("IMAGE_ARRAY type",img_array.dtype)
 	print ("EXPANDED",img_array.shape)
 
 	#predictions = model.predict(img_array)
 	interpreter = tf.lite.Interpreter(model_path="bkgmodel_quant.tflite")
+	print ("BEFORE RESIZE INPUT TENSOR",interpreter.get_input_details())
 	interpreter.resize_tensor_input(0, [1, 180, 180, 1])
+	print ("BEFORE ALLOCATE INPUT TENSOR",interpreter.get_input_details())
 	interpreter.allocate_tensors()
 	print ("INPUT TENSOR",interpreter.get_input_details())
 	print ("OUTPUT TENSOR",interpreter.get_output_details())
@@ -38,7 +40,7 @@ def infer(filename,classes):
 	print ("IMAGE_ARRAY type",img_array.dtype)
 	input_details = interpreter.get_input_details()[0]
 	print ("INPUT dtype ",input_details["dtype"])
-	img_array = np.expand_dims(img_array, axis=0).astype(input_details["dtype"])
+	#img_array = np.expand_dims(img_array, axis=0).astype(input_details["dtype"])
 	interpreter.set_tensor(0, img_array)
 	v=interpreter.invoke()
 	answers = output()
