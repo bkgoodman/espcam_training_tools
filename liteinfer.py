@@ -36,6 +36,9 @@ def infer(filename,classes):
 	output = interpreter.tensor(interpreter.get_output_details()[0]["index"])
 	#input().fill(1.)
 	print ("IMAGE_ARRAY type",img_array.dtype)
+	input_details = interpreter.get_input_details()[0]
+	print ("INPUT dtype ",input_details["dtype"])
+	img_array = np.expand_dims(img_array, axis=0).astype(input_details["dtype"])
 	interpreter.set_tensor(0, img_array)
 	v=interpreter.invoke()
 	answers = output()
