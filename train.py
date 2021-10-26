@@ -3,6 +3,8 @@
 
 
 import tensorflow as tf
+import argparse
+import numpy as np
 print (tf.__version__)
 
 #!rm -rf bkgmodel_cp* bkgmodel.h5 bkgmode.png
@@ -14,6 +16,9 @@ import os
 import pathlib
 CHECKPOINT=250
 EPOCHS=2000
+MODELNAME="bkgmodel"
+IMAGE_DIRECTORY="saved_images"
+INITIAL_EPOCH=1
 class CustomCallback(tf.keras.callbacks.Callback):
         def on_epoch_end(self, epoch, logs=None):
                 keys = list(logs.keys())
@@ -21,12 +26,12 @@ class CustomCallback(tf.keras.callbacks.Callback):
                 if os.path.exists("stoptrain"):
                         os.unlink("stoptrain")
                         self.model.stop_training = True
-                        cpname = str("bkgmodel_cp{0:05}.h5".format(epoch))
+                        cpname = str("{}_cp{0:05}.h5".format(MODELNAME,epoch))
                         self.model.save(cpname)
                 epoch += 1
                 if ((CHECKPOINT is not None) and ((epoch % CHECKPOINT)==0) and (epoch != EPOCHS)):
                   print ("CHECKPOINT")
-                  cpname = str("bkgmodel_cp{0:05}.h5".format(epoch))
+                  cpname = str("{}_cp{0:05}.h5".format(MODELNAME,epoch))
                   self.model.save(cpname)
                   """
                   try:
@@ -34,9 +39,99 @@ class CustomCallback(tf.keras.callbacks.Callback):
                   except ClientError as e:
                       logging.error(e)
                   """
+def plot_confusion_matrix(cm, class_names):
+  """
+  Returns a matplotlib figure containing the plotted confusion matrix.
 
+  Args:
+    cm (array, shape = [n, n]): a confusion matrix of integer classes
+    class_names (array, shape = [n]): String names of the integer classes
+  """
+  figure = plt.figure(figsize=(8, 8))
+  plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+  plt.title("Confusion matrix")
+  plt.colorbar()
+  tick_marks = np.arange(len(class_names))
+  plt.xticks(tick_marks, class_names, rotation=45)
+  plt.yticks(tick_marks, class_names)
+
+  # Compute the labels from the normalized confusion matrix.
+  labels = np.around(cm.astype('float') / cm.sum(axis=1)[:, np.newaxis], decimals=2)
+
+  # Use white text if squares are dark; otherwise black.
+  threshold = cm.max() / 2.
+  for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+    color = "white" if cm[i, j] > threshold else "black"
+    plt.text(j, i, labels[i, j], horizontalalignment="center", color=color)
+
+  plt.tight_layout()
+  plt.ylabel('True label')
+  plt.xlabel('Predicted label')
+  return figure
+
+
+
+
+def log_confusion_matrix(epoch, logs):
+  print ("Build Conf Matrix EPOCH {}".format(epoch))
+  val_pred = model.predict(val_ds)
+  """
+  print ("VAL_PRED is", val_pred.shape)
+  print (val_pred)
+
+  print ("VAL_DS is", val_ds)
+  print (dir(val_ds))
+  for (i,x) in enumerate(val_ds):
+        if (i==0):
+            print ("FIRST VAL IS",x)
+            print (dir(x))
+  """
+  for (i,x) in enumerate(val_pred):
+        if (i%13)==0:
+            print ("VAL PREDICT {:>3.0f} category {}: ".format(i,val_ds.classes[i]),end='')
+            for z in range(len(class_names)):
+                print ("{: >6.2f} ".format(x[z]*100),end='')
+            print ("file {}".format(val_ds.filenames[i]))
+  print ("DONE Conf Matrix")
+  """
+  # Use the model to predict the values from the validation dataset.
+  test_pred_raw = model.predict(val_ds)
+  test_pred = np.argmax(test_pred_raw, axis=1)
+
+  # Calculate the confusion matrix.
+  cm = sklearn.metrics.confusion_matrix(test_labels, test_pred)
+  # Log the confusion matrix as an image summary.
+  figure = plot_confusion_matrix(cm, class_names=class_names)
+  cm_image = plot_to_image(figure)
+
+  # Log the confusion matrix as an image summary.
+  with file_writer_cm.as_default():
+    tf.summary.image("Confusion Matrix", cm_image, step=epoch)
+  """
+
+# Define the per-epoch callback.
+# Clear out prior logging data.
+def model_summary_output(s):
+    with open('{}_model.txt'.format(MODELNAME),'w+') as f:
+        print(s, file=f)
+
+parser = argparse.ArgumentParser(description='Run training on images.')
+parser.add_argument('--model', default=MODELNAME, help='Base name for model files')
+parser.add_argument('--epochs', default=EPOCHS, type=int, help='Number of Epochs to run')
+parser.add_argument('--checkpoint', default=CHECKPOINT, type=int, help='Checkpoint every # epochs')
+parser.add_argument('--batch_size', default=320, type=int, help='Batch Size')
+parser.add_argument('--contfile', help='Checkpoint file to continue training from')
+parser.add_argument('--images', default=IMAGE_DIRECTORY, help='root directory of categorized images')
+parser.add_argument('--tbdebug', help='Enable Tensorboard Debug Data',action="store_true")
+parser.add_argument('--initial_epoch', default=INITIAL_EPOCH, help='Starting epoc number (used for continuing)')
+args = parser.parse_args()
+EPOCHS=args.epochs
+INITIAL_EPOCH=args.initial_epoch
+MODELNAME=args.model
+CHECKPOINT=args.checkpoint
+IMAGE_DIRECTORY=args.images
+batch_size=args.batch_size
 image_size=(180,180)
-batch_size=320
 input_shape = image_size+(1,)
 
 train_ds = tf.keras.preprocessing.image.ImageDataGenerator(
@@ -52,22 +147,23 @@ val_ds = tf.keras.preprocessing.image.ImageDataGenerator(
         validation_split=0.2,
         rotation_range=20)
 train_ds = train_ds.flow_from_directory(
-        'saved_images',
+        IMAGE_DIRECTORY,
         target_size=image_size,
         subset='training',
         batch_size=batch_size,
                                 color_mode='grayscale',
         class_mode='sparse')
 val_ds = val_ds.flow_from_directory(
-        'saved_images',
+        IMAGE_DIRECTORY,
         target_size=image_size,
         batch_size=batch_size,
                                 color_mode='grayscale',
         subset='validation',
-        class_mode='sparse')
+        class_mode='sparse' # TODO "categorical" ??
+        )
 
-j = sorted(train_ds.class_indices,key=lambda y: y)
-json.dump (j,open('bkgmodel_classes.json','w'))
+class_names = sorted(train_ds.class_indices,key=lambda y: y)
+json.dump (class_names,open('{}_classes.json'.format(MODELNAME),'w'))
 """
 train_ds = tf.keras.preprocessing.image_dataset_from_directory(
     "saved_images",
@@ -124,7 +220,12 @@ Original ESPCam Fashion MINST model
 """
 
 log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+# Tensorboard debug - disable if too big??
+if args.tbdebug:
+    tf.debugging.experimental.enable_dump_debug_info(log_dir, tensor_debug_mode="FULL_HEALTH", circular_buffer_size=-1)
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+file_writer_cm = tf.summary.create_file_writer(log_dir + '/cm')
+cm_callback = tf.keras.callbacks.LambdaCallback(on_epoch_end=log_confusion_matrix)
 
 model.compile(
     #optimizer=tf.keras.optimizers.Adam(1e-6), #5
@@ -135,12 +236,19 @@ model.compile(
     metrics=["sparse_categorical_accuracy"],
 )
 model.summary()
-if os.path.isfile("bkgmodel_continue.h5"):
-    os.rename("bkgmodel_continue.h5","bkgmodel_lastcontinue.h5")
-    model = tf.keras.models.load_model("bkgmodel_lastcontinue.h5")
+model.summary(print_fn=model_summary_output)
+with open("{}_model.json".format(MODELNAME),"w+") as fd:
+    fd.write(model.to_json())
+if os.path.isfile("{}_continue.h5".format(MODELNAME)):
+    os.rename("{}_continue.h5".format(MODELNAME),"{}_lastcontinue.h5".format(MODELNAME))
+    model = tf.keras.models.load_model("{}_lastcontinue.h5".format(MODELNAME))
     print ("Continuing training....")
-history=model.fit(train_ds, epochs=EPOCHS, validation_data=val_ds, callbacks=[tensorboard_callback,CustomCallback()])
-model.save("bkgmodel.h5",save_format='h5')
+if args.contfile is not None:
+    os.rename(args.contfile,"{}_lastcontinue.h5".format(MODELNAME))
+    model = tf.keras.models.load_model("{}_lastcontinue.h5".format(MODELNAME))
+    print ("Continuing training from {}....".format(args.contfile))
+history=model.fit(train_ds, epochs=EPOCHS, validation_data=val_ds, initial_epoch=INITIAL_EPOCH,callbacks=[tensorboard_callback,cm_callback,CustomCallback()])
+model.save("{}.h5".format(MODELNAME),save_format='h5')
 print (train_ds.class_indices)
 
 """# Plot Results"""
@@ -168,7 +276,7 @@ axs[1].set_ylabel('loss')
 axs[1].set_xlabel('epoch')
 axs[1].legend(['train', 'test'], loc='upper left')
 #axs[1].show()
-fig.savefig("bkgmodel.png")
+fig.savefig("{}_training.png".format(MODELNAME))
 fig.show()
 
 
@@ -182,8 +290,8 @@ for x in history.history.keys():
       t.append(str(history.history[k][x]))
     print (", ".join(t))
 
-model.save("bkgmodel.h5")
-json.dump (j,open('bkgmodel_classes.json','w'))
+model.save("{}.h5".format(MODELNAME))
+#json.dump (class_names,open('{}_classes.json'.format(MODELNAME),'w'))
 
 
 """# Quantize the model

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import os, sys,glob
 from globals import  IMAGE_DIR,directories
 

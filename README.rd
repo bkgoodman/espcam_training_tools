@@ -11,3 +11,4 @@ train.py  - builds model
 quantize.py - Converts Tensorflow float model to TensorflowLite 8-bit model
 infer.py - Infernce server  - because infer.cgi takes a while to load, but infers fast
 infer.cgi - Runs inference from build bkgmodel.h5 - requires infer.py to be running (chown the socket unix-domain socket it creates so apache2 can read it!)
+liteinfer.py - Runs inference form the TFLite 8-bit model
