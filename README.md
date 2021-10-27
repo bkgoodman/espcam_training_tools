@@ -5,7 +5,7 @@ It works by connecting to an ESP-CAM (or similar) project from the default sampl
 
 Work TBD involved saving the model as TensorFlow Lite Micro for incluion back into ESP-WHO project
 
-It is kind of a giant experimental mess right now - but it is a start-to-finish flow that lets you:
+It is kind of a giant experimental mess right now - but it will let you:
 
 1. Acquire images directly from ESP32-CAM (Web GUI)
 2. Save and categorize them (on a host computer) (Web GUI)
@@ -17,6 +17,8 @@ It is kind of a giant experimental mess right now - but it is a start-to-finish 
 8. Convert to TFLite
 9. Quantize to 8-bit
 10. Test Inference w/ 8-bit TFlite model (on Linux)
+
+...and ultimatley let you run that model on an ESP32 - but that's still in-progress.
 
 # Scripts
 
