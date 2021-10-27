@@ -22,6 +22,7 @@ quantize.py - Converts Tensorflow float model to TensorflowLite 8-bit model
 infer.py - Infernce server  - because infer.cgi takes a while to load, but infers fast
 infer.cgi - Runs inference from build bkgmodel.h5 - requires infer.py to be running (chown the socket unix-domain socket it creates so apache2 can read it!)
 liteinfer.py - Runs inference form the TFLite 8-bit model
+confusion_matrix.py - Generate a confusion matrix (on fed images) to judge model accuracy
 
 espcam.cgi - "Main" CGI script - Mainly used to collect (and categorized) images for training, directly from ESP camera. Also allows you to run infernece on saved or "live" images to test your model on your local computer.
 cam.cgi - This CGI is used internall by the espcam.cgi script to physically collect images from ESPcam. (You'll probably need to set an IP address of your camera in this script)
